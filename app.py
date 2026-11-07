@@ -70,12 +70,30 @@ def main():
     st.dataframe(df.head())
 
     feature_cols = expected_feature_columns()
-    model = models[model_name]
-
     X = df[feature_cols]
     y_true = df[TARGET_COL]
-    y_pred = model.predict(X)
-    y_proba = model.predict_proba(X)
+
+    # the brief wants all five models' results visible on the uploaded
+    # data, not just whichever one is selected in the dropdown
+    st.subheader("All models on this test data")
+    predictions = {}  # reused below for whichever model is selected
+    comparison = {}
+    for name, m in models.items():
+        pred = m.predict(X)
+        proba = m.predict_proba(X)
+        predictions[name] = (pred, proba)
+        comparison[MODEL_LABELS[name]] = compute_metrics(y_true, pred, proba, class_labels=m.classes_)
+    comparison_df = pd.DataFrame(comparison).T
+    st.dataframe(comparison_df)
+    st.download_button(
+        "Download comparison as CSV",
+        comparison_df.to_csv().encode("utf-8"),
+        file_name="model_comparison.csv",
+        mime="text/csv",
+    )
+
+    model = models[model_name]
+    y_pred, y_proba = predictions[model_name]
     metrics = compute_metrics(y_true, y_pred, y_proba, class_labels=model.classes_)
 
     st.subheader(f"Metrics — {MODEL_LABELS[model_name]}")
