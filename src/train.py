@@ -13,6 +13,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.tree import DecisionTreeClassifier
 
 from src.data import REPO_ROOT, load_features_and_target, save_test_csv, split
 from src.metrics import compute_metrics
@@ -33,8 +34,22 @@ def build_logistic_regression() -> tuple[Pipeline, dict]:
     return pipe, param_grid
 
 
+def build_decision_tree() -> tuple[Pipeline, dict]:
+    # no scaling needed for a tree — splits don't care about feature scale
+    pipe = Pipeline([("clf", DecisionTreeClassifier(random_state=RANDOM_STATE))])
+    # tuning depth/leaf size because an unpruned tree on this data will
+    # memorize the training set (near-100% train accuracy) and that's not
+    # a real result, it's overfitting
+    param_grid = {
+        "clf__max_depth": [5, 10, 15, 20, None],
+        "clf__min_samples_leaf": [1, 5, 10],
+    }
+    return pipe, param_grid
+
+
 MODEL_BUILDERS = {
     "logistic_regression": build_logistic_regression,
+    "decision_tree": build_decision_tree,
 }
 
 
