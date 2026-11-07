@@ -65,13 +65,48 @@ def main():
         st.info("Upload a CSV with the 22 MFCC feature columns plus the Species column to get started.")
         return
 
-    df = pd.read_csv(uploaded)
+    try:
+        df = pd.read_csv(uploaded)
+    except Exception as exc:
+        st.error(f"Couldn't read that as a CSV: {exc}")
+        return
+
+    if df.empty:
+        st.error("The uploaded CSV has no rows.")
+        return
+
+    feature_cols = expected_feature_columns()
+    required_cols = [*feature_cols, TARGET_COL]
+    missing_cols = [c for c in required_cols if c not in df.columns]
+    if missing_cols:
+        st.error(f"Missing required column(s): {', '.join(missing_cols)}")
+        return
+
+    numeric_X = df[feature_cols].apply(pd.to_numeric, errors="coerce")
+    bad_rows = numeric_X.isnull().any(axis=1)
+    if bad_rows.any():
+        st.error(
+            f"{bad_rows.sum()} row(s) have a missing or non-numeric value in a "
+            "feature column. Fix the CSV and re-upload — the app won't guess "
+            "or impute values for you."
+        )
+        return
+
+    if df[TARGET_COL].isnull().any():
+        st.error(f"The {TARGET_COL} column has missing values.")
+        return
+
     st.write(f"Loaded {df.shape[0]} rows, {df.shape[1]} columns.")
     st.dataframe(df.head())
 
-    feature_cols = expected_feature_columns()
-    X = df[feature_cols]
+    X = numeric_X
     y_true = df[TARGET_COL]
+
+    if y_true.nunique() < 2:
+        st.warning(
+            "Only one class is present in this file, so AUC and a few other "
+            "metrics aren't well-defined — predictions still run below."
+        )
 
     # the brief wants all five models' results visible on the uploaded
     # data, not just whichever one is selected in the dropdown
