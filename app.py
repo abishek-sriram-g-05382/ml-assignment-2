@@ -59,6 +59,12 @@ def main():
         "Model", options=list(MODEL_LABELS), format_func=lambda k: MODEL_LABELS[k]
     )
 
+    with st.sidebar.expander("Dataset info"):
+        info_df = pd.read_csv(TEST_CSV)
+        st.write(f"**{len(expected_feature_columns())} MFCC features**, 10 frog species")
+        st.write("Species distribution in the bundled held-out test set:")
+        st.bar_chart(info_df[TARGET_COL].value_counts())
+
     uploaded = st.file_uploader("Upload test CSV", type="csv")
 
     if uploaded is None:
@@ -147,6 +153,12 @@ def main():
     st.subheader("Classification report")
     report = classification_report(y_true, y_pred, labels=labels_sorted, zero_division=0)
     st.text(report)
+
+    st.divider()
+    st.caption(
+        "Dataset: Anuran Calls (MFCCs), UCI Machine Learning Repository. "
+        "Models are loaded from model/ and never retrained on uploaded data."
+    )
 
 
 if __name__ == "__main__":
