@@ -12,6 +12,7 @@ import pandas as pd
 import streamlit as st
 from sklearn.metrics import ConfusionMatrixDisplay, classification_report, confusion_matrix
 
+from src.data import clean_columns
 from src.metrics import compute_metrics
 
 APP_DIR = Path(__file__).resolve().parent
@@ -76,6 +77,12 @@ def main():
     except Exception as exc:
         st.error(f"Couldn't read that as a CSV: {exc}")
         return
+
+    # the source dataset ships with inconsistent MFCC header spacing
+    # ("MFCCs_ 1" vs "MFCCs_10") — normalize on upload the same way
+    # src/data.py does for training, so a CSV built from the raw UCI file
+    # isn't rejected over whitespace
+    df = clean_columns(df)
 
     if df.empty:
         st.error("The uploaded CSV has no rows.")

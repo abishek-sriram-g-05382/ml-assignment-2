@@ -18,10 +18,11 @@ TARGET_COL = "Species"
 DROP_COLS = ["Family", "Genus", "RecordID"]
 
 
-def _clean_columns(df: pd.DataFrame) -> pd.DataFrame:
+def clean_columns(df: pd.DataFrame) -> pd.DataFrame:
     # the source CSV has inconsistent spacing in MFCC headers
     # ("MFCCs_ 1" vs "MFCCs_10") — normalize so there's one naming scheme
-    # used everywhere (training, test_data.csv, the app's upload check).
+    # used everywhere (training, test_data.csv, and anything a user uploads
+    # to the app, including the raw UCI file itself).
     df = df.copy()
     df.columns = [c.strip().replace(" ", "") for c in df.columns]
     return df
@@ -29,7 +30,7 @@ def _clean_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 def load_raw(path: Path = RAW_CSV) -> pd.DataFrame:
     df = pd.read_csv(path)
-    return _clean_columns(df)
+    return clean_columns(df)
 
 
 def feature_columns(df: pd.DataFrame) -> list[str]:
