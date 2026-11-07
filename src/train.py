@@ -11,6 +11,7 @@ import joblib
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.tree import DecisionTreeClassifier
@@ -47,9 +48,21 @@ def build_decision_tree() -> tuple[Pipeline, dict]:
     return pipe, param_grid
 
 
+def build_knn() -> tuple[Pipeline, dict]:
+    # scaling matters a lot here — KNN is pure distance, so one feature
+    # with a wider range than the others would otherwise dominate it
+    pipe = Pipeline([
+        ("scaler", StandardScaler()),
+        ("clf", KNeighborsClassifier()),
+    ])
+    param_grid = {"clf__n_neighbors": [3, 5, 7, 9, 11, 15]}
+    return pipe, param_grid
+
+
 MODEL_BUILDERS = {
     "logistic_regression": build_logistic_regression,
     "decision_tree": build_decision_tree,
+    "knn": build_knn,
 }
 
 
