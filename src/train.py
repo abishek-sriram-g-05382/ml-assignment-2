@@ -15,6 +15,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
 from src.data import REPO_ROOT, load_features_and_target, save_test_csv, split
@@ -70,11 +71,26 @@ def build_naive_bayes() -> tuple[Pipeline, dict]:
     return pipe, {}
 
 
+def build_svm() -> tuple[Pipeline, dict]:
+    # probability=True is required for AUC and slows training down a lot —
+    # worth noting in the observations alongside the accuracy numbers
+    pipe = Pipeline([
+        ("scaler", StandardScaler()),
+        ("clf", SVC(probability=True, random_state=RANDOM_STATE)),
+    ])
+    param_grid = {
+        "clf__kernel": ["linear", "rbf"],
+        "clf__C": [0.1, 1, 10],
+    }
+    return pipe, param_grid
+
+
 MODEL_BUILDERS = {
     "logistic_regression": build_logistic_regression,
     "decision_tree": build_decision_tree,
     "knn": build_knn,
     "naive_bayes": build_naive_bayes,
+    "svm": build_svm,
 }
 
 
