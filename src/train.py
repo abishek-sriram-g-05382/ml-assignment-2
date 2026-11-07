@@ -11,6 +11,7 @@ import joblib
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
+from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
@@ -59,10 +60,21 @@ def build_knn() -> tuple[Pipeline, dict]:
     return pipe, param_grid
 
 
+def build_naive_bayes() -> tuple[Pipeline, dict]:
+    # scaling doesn't matter for GaussianNB, and GaussianNB (not
+    # MultinomialNB) is the right call here since MFCCs can be negative
+    pipe = Pipeline([("clf", GaussianNB())])
+    # nothing worth grid-searching — expected to underperform anyway since
+    # MFCCs are correlated with each other, which breaks NB's independence
+    # assumption between features
+    return pipe, {}
+
+
 MODEL_BUILDERS = {
     "logistic_regression": build_logistic_regression,
     "decision_tree": build_decision_tree,
     "knn": build_knn,
+    "naive_bayes": build_naive_bayes,
 }
 
 
