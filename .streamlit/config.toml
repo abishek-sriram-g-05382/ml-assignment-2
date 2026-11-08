@@ -1,5 +1,15 @@
+# shared accent color for both modes — [theme.light]/[theme.dark] extend
+# this rather than replace it, so the built-in Settings > "Choose app theme"
+# switcher (Light / Dark / Use system setting) still works for the viewer
 [theme]
 primaryColor = "#2e7d32"
+
+[theme.light]
 backgroundColor = "#ffffff"
 secondaryBackgroundColor = "#f1f8f2"
 textColor = "#1b1b1b"
+
+[theme.dark]
+backgroundColor = "#0e1117"
+secondaryBackgroundColor = "#1a2420"
+textColor = "#e8f5e9"

@@ -43,6 +43,14 @@ def _mfcc_description(i: int) -> str:
 
 FEATURE_DESCRIPTIONS = {f"MFCCs_{i}": _mfcc_description(i) for i in range(1, 23)}
 
+# mirrors .streamlit/config.toml's [theme.light]/[theme.dark] colors, so the
+# confusion matrix figure matches whichever mode the viewer picked (or their
+# system setting) instead of always rendering a plain white matplotlib box
+THEME_COLORS = {
+    "light": {"bg": "#ffffff", "text": "#1b1b1b", "cmap": "Greens"},
+    "dark": {"bg": "#0e1117", "text": "#e8f5e9", "cmap": "Greens"},
+}
+
 st.set_page_config(page_title="Frog Species Classifier", page_icon="🐸", layout="wide")
 
 
@@ -175,10 +183,20 @@ def main():
     st.subheader("Confusion matrix")
     labels_sorted = sorted(y_true.unique())
     cm = confusion_matrix(y_true, y_pred, labels=labels_sorted)
+
+    theme_type = st.context.theme.type or "light"
+    colors = THEME_COLORS[theme_type]
+
     fig, ax = plt.subplots(figsize=(6, 6))
+    fig.patch.set_facecolor(colors["bg"])
+    ax.set_facecolor(colors["bg"])
     ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels_sorted).plot(
-        ax=ax, xticks_rotation=45, colorbar=False
+        ax=ax, xticks_rotation=45, colorbar=False, cmap=colors["cmap"]
     )
+    ax.tick_params(colors=colors["text"])
+    ax.xaxis.label.set_color(colors["text"])
+    ax.yaxis.label.set_color(colors["text"])
+    ax.title.set_color(colors["text"])
     st.pyplot(fig)
 
     st.subheader("Classification report")
