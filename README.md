@@ -51,12 +51,12 @@ Metrics computed on the held-out test split (`test_data.csv`, 1,439 rows), preci
 
 | ML Model Name	| Observation about model performance
 | -------------| -----------|
-|Logistic Regression	|Accuracy is 96.6%, but macro-F1 is only 0.909, so accuracy hides weakness on rare species like Rhinellagranulosa (68 rows). As a linear model, it cannot draw curved boundaries between species.|
-|Decision Tree	|Accuracy is 93.95%, macro-F1 is 0.864 and AUC is 0.932, with the best depth at max_depth=10. One tree makes only straight, axis-aligned cuts. Deeper trees overfit and shallower ones underfit.|
-|KNN	|Very strong: accuracy 98.68%, macro-F1 0.973 and MCC 0.982, with k=3 the best. MFCC features are compact and similar in scale, so “nearest call sounds the same” works well. Prediction is slower on large data because it scans all training rows.|
-|Naive Bayes |	Weakest model: accuracy 91.7% and macro-F1 0.836. It assumes the 22 MFCCs are independent, but they are correlated by design. This hurts most on the small species.
-|Support Vector Machine	|Best overall: accuracy 99.10%, macro-F1 0.978, MCC 0.987 and AUC 0.9996 (RBF kernel, C=10). The RBF kernel bends the boundary more flexibly than KNN. It was the slowest to train, since probability=True adds extra calibration.|
-|Overall, Winner for your dataset? |	SVM. Classes are very imbalanced (about 50:1), so accuracy alone is misleading. SVM leads on MCC (0.987), macro-F1 (0.978) and AUC (0.9996). KNN is a close second (MCC 0.982) and is a good choice if cheap training matters more.|
+|Logistic Regression	|Accuracy is 96.6%, but macro F1 is only 0.909, so accuracy hides weakness on rare species like Rhinellagranulosa (68 rows). As a linear model, it cannot draw curved boundaries between species.|
+|Decision Tree	|Accuracy is 93.95%, macro F1 is 0.864 and AUC is 0.932, with the best depth at max_depth=10. One tree makes only straight, axis-aligned cuts. Deeper trees overfit and shallower ones underfit.|
+|KNN	|Very strong: accuracy 98.68%, macro F1 0.973 and MCC 0.982, with k=3 the best. MFCC features are compact and similar in scale, so “nearest call sounds the same” works well. Prediction is slower on large data because it scans all training rows.|
+|Naive Bayes |	Weakest model: accuracy 91.7% and macro F1 0.836. It assumes the 22 MFCCs are independent, but they are correlated by design. This hurts most on the small species.
+|Support Vector Machine	|Best overall: accuracy 99.10%, macro F1 0.978, MCC 0.987 and AUC 0.9996 (RBF kernel, C=10). The RBF kernel bends the boundary more flexibly than KNN. It was the slowest to train, since probability=True adds extra calibration.|
+|Overall, Winner for your dataset? |	SVM. Classes are very imbalanced (about 50:1), so accuracy alone is misleading. SVM leads on MCC (0.987), macro F1 (0.978) and AUC (0.9996). KNN is a close second (MCC 0.982) and is a good choice if cheap training matters more.|
 
 
 ## Running locally
@@ -73,3 +73,36 @@ To retrain everything from scratch (writes `test_data.csv`, `model/*.joblib`, `r
 ```
 python -m src.train
 ```
+
+
+## Project Structure
+
+```
+anuran-species-classifier/
+├── app.py                      # Streamlit app — upload, predict, compare, visualize
+├── requirements.txt
+├── test_data.csv                # held-out test split (raw features + target)
+├── data/
+│   ├── Frogs_MFCCs.csv          # raw dataset from UCI
+│   └── SOURCE.md                # where it came from, and what to watch out for
+├── notebooks/
+│   └── eda.ipynb                # class balance, missing values, feature ranges
+├── src/
+│   ├── data.py                  # load, clean columns, drop leak columns, split
+│   ├── metrics.py               # shared metric computation (used by train.py and app.py)
+│   └── train.py                 # builds, tunes, evaluates, and saves all 5 models
+├── model/
+│   ├── logistic_regression.joblib
+│   ├── decision_tree.joblib
+│   ├── knn.joblib
+│   ├── naive_bayes.joblib
+│   └── svm.joblib
+├── results/
+│   └── metrics_comparison.csv   # output of train.py — source for the Results table above
+├── scripts/
+│   └── smoke_test.py            # reloads each model and checks metrics still match
+```
+
+## Test Data
+
+[`test_data.csv`](test_data.csv) —  20% split (1,439 rows)  test data
