@@ -35,6 +35,12 @@ Class distribution (full dataset):
 
 **Feature table:** `MFCCs_1` through `MFCCs_22`, all continuous [-1,1]
 
+| Application | URL | 
+|-------------|------|
+| Github | https://github.com/abishek-sriram-g-05382/ml-assignment-2/tree/main |
+|Streamlit | https://ml-assignment-2-bits-as.streamlit.app/|
+
+
 ## Results
 
 Metrics computed on the held-out test split (`test_data.csv`, 1,439 rows), precision/recall/F1 macro-averaged across the 10 species, AUC via `roc_auc_score(..., multi_class="ovr", average="macro")`. Full numbers in [`results/metrics_comparison.csv`](results/metrics_comparison.csv).
