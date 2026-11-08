@@ -1,11 +1,10 @@
-"""Streamlit front-end for the frog species classifier.
-
-Loads the five saved pipelines from model/ and scores whatever CSV is
-uploaded — never retrains, never calls .fit() on uploaded data.
+"""Stream lit app for classifying anuran species from MFCC features.
 """
 
+# This file is the main entry point for the Streamlit app.
+# It loads the trained models, provides a user interface for uploading test data, 
+# and displays predictions and evaluation metrics.
 from pathlib import Path
-
 import joblib
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -28,10 +27,8 @@ MODEL_LABELS = {
     "svm": "SVM",
 }
 
-
+# Function to provide descriptions for MFCC features
 def _mfcc_description(i: int) -> str:
-    # standard MFCC interpretation: low-order coefficients track the broad
-    # spectral envelope, higher-order ones track progressively finer detail
     if i == 1:
         return "Overall energy and the broadest shape of the call's frequency spectrum."
     if i <= 6:
@@ -40,19 +37,16 @@ def _mfcc_description(i: int) -> str:
         return "Mid-level spectral detail of the call."
     return "Fine-grained spectral detail and higher-frequency texture of the call."
 
-
+# Generate a dictionary mapping MFCC feature names to their descriptions
 FEATURE_DESCRIPTIONS = {f"MFCCs_{i}": _mfcc_description(i) for i in range(1, 23)}
 
-# mirrors .streamlit/config.toml's [theme.light]/[theme.dark] colors, so the
-# confusion matrix figure matches whichever mode the viewer picked (or their
-# system setting) instead of always rendering a plain white matplotlib box
+# Set theme colors
 THEME_COLORS = {
     "light": {"bg": "#ffffff", "text": "#1b1b1b", "cmap": "Greens"},
     "dark": {"bg": "#0e1117", "text": "#e8f5e9", "cmap": "Greens"},
 }
 
 st.set_page_config(page_title="Frog Species Classifier", page_icon="🐸", layout="wide")
-
 
 @st.cache_resource
 def load_models() -> dict:
@@ -71,7 +65,7 @@ def expected_feature_columns() -> list[str]:
     header = pd.read_csv(TEST_CSV, nrows=0).columns.tolist()
     return [c for c in header if c != TARGET_COL]
 
-
+# Main function to run the Streamlit app
 def main():
     st.title("🐸 Frog Species Classifier")
     st.caption("Predicting Anuran species from MFCC call features — upload a test CSV below.")

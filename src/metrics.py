@@ -1,8 +1,4 @@
-"""Shared metric computation — used by both train.py and app.py so the
-numbers in the README and the numbers the app shows on test_data.csv come
-from the exact same code path.
-"""
-
+# Import functions for computing metrics from sklearn, and numpy for numerical operations
 import numpy as np
 from sklearn.metrics import (
     accuracy_score,
@@ -15,10 +11,12 @@ from sklearn.metrics import (
 
 AVERAGING = "macro"  # multiclass, heavily imbalanced — macro so rare species count
 
-
+# Function to compute various classification metrics
 def compute_metrics(y_true, y_pred, y_proba=None, class_labels=None) -> dict:
-    """y_proba, if given, must have columns ordered to match class_labels
-    (i.e. model.classes_) — that's what predict_proba returns.
+    """
+    Function to compute classification metrics :
+      accuracy, precision, recall, F1 score, 
+      Matthews correlation coefficient (MCC), and AUC (Area Under the Curve).
     """
     metrics = {
         "accuracy": accuracy_score(y_true, y_pred),
@@ -40,10 +38,6 @@ def compute_metrics(y_true, y_pred, y_proba=None, class_labels=None) -> dict:
             average=AVERAGING,
             labels=class_labels if class_labels is not None else np.unique(y_true),
         )
-        # when a class the model was trained on never shows up in y_true,
-        # sklearn doesn't always raise — depending on version it can warn
-        # and hand back nan for that class's contribution to the macro
-        # average instead. Either way, it means the same thing here.
         metrics["auc"] = "N/A (class missing)" if np.isnan(auc) else auc
     except ValueError:
         metrics["auc"] = "N/A (class missing)"

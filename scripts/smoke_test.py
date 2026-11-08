@@ -1,8 +1,3 @@
-"""CI smoke test: load each saved model, score test_data.csv, and confirm
-the result matches results/metrics_comparison.csv — catches a model/sklearn
-version mismatch before Streamlit Cloud does.
-"""
-
 import sys
 from pathlib import Path
 

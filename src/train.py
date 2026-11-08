@@ -1,10 +1,4 @@
-"""Train the five models on the Anuran Calls dataset, evaluate each on a
-held-out stratified split, and save everything needed for the Streamlit app:
-the fitted pipelines, test_data.csv, and a metrics comparison table.
-
-Run from the repo root: python -m src.train
-"""
-
+"Import Functions"
 from pathlib import Path
 
 import joblib
@@ -28,6 +22,7 @@ TEST_CSV_PATH = REPO_ROOT / "test_data.csv"
 RANDOM_STATE = 42
 
 
+# Function for building a logistic regression model
 def build_logistic_regression() -> tuple[Pipeline, dict]:
     pipe = Pipeline([
         ("scaler", StandardScaler()),
@@ -36,7 +31,7 @@ def build_logistic_regression() -> tuple[Pipeline, dict]:
     param_grid = {"clf__C": [0.01, 0.1, 1, 10]}
     return pipe, param_grid
 
-
+# Function for building a decision tree model
 def build_decision_tree() -> tuple[Pipeline, dict]:
     # no scaling needed for a tree — splits don't care about feature scale
     pipe = Pipeline([("clf", DecisionTreeClassifier(random_state=RANDOM_STATE))])
@@ -49,7 +44,7 @@ def build_decision_tree() -> tuple[Pipeline, dict]:
     }
     return pipe, param_grid
 
-
+# Function for building a KNN model
 def build_knn() -> tuple[Pipeline, dict]:
     # scaling matters a lot here — KNN is pure distance, so one feature
     # with a wider range than the others would otherwise dominate it
@@ -60,7 +55,7 @@ def build_knn() -> tuple[Pipeline, dict]:
     param_grid = {"clf__n_neighbors": [3, 5, 7, 9, 11, 15]}
     return pipe, param_grid
 
-
+# Function for building a Naive Bayes model
 def build_naive_bayes() -> tuple[Pipeline, dict]:
     # scaling doesn't matter for GaussianNB, and GaussianNB (not
     # MultinomialNB) is the right call here since MFCCs can be negative
@@ -70,7 +65,7 @@ def build_naive_bayes() -> tuple[Pipeline, dict]:
     # assumption between features
     return pipe, {}
 
-
+# Function for building a SVM model
 def build_svm() -> tuple[Pipeline, dict]:
     # probability=True is required for AUC and slows training down a lot —
     # worth noting in the observations alongside the accuracy numbers
@@ -84,7 +79,7 @@ def build_svm() -> tuple[Pipeline, dict]:
     }
     return pipe, param_grid
 
-
+# Dictionary mapping model names to their corresponding builder functions
 MODEL_BUILDERS = {
     "logistic_regression": build_logistic_regression,
     "decision_tree": build_decision_tree,
@@ -93,7 +88,7 @@ MODEL_BUILDERS = {
     "svm": build_svm,
 }
 
-
+# Function to fit a model and evaluate its performance
 def fit_and_evaluate(name, builder, X_train, X_test, y_train, y_test):
     pipe, param_grid = builder()
     search = GridSearchCV(pipe, param_grid, cv=5, n_jobs=-1)
@@ -113,7 +108,7 @@ def fit_and_evaluate(name, builder, X_train, X_test, y_train, y_test):
 
     return metrics
 
-
+# Main function to load data, train models, and save results
 def main():
     X, y, feature_cols = load_features_and_target()
     X_train, X_test, y_train, y_test = split(X, y, random_state=RANDOM_STATE)
