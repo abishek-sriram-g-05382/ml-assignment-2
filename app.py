@@ -28,6 +28,21 @@ MODEL_LABELS = {
     "svm": "SVM",
 }
 
+
+def _mfcc_description(i: int) -> str:
+    # standard MFCC interpretation: low-order coefficients track the broad
+    # spectral envelope, higher-order ones track progressively finer detail
+    if i == 1:
+        return "Overall energy and the broadest shape of the call's frequency spectrum."
+    if i <= 6:
+        return "Broad spectral envelope — coarse, formant-like shape of the call."
+    if i <= 13:
+        return "Mid-level spectral detail of the call."
+    return "Fine-grained spectral detail and higher-frequency texture of the call."
+
+
+FEATURE_DESCRIPTIONS = {f"MFCCs_{i}": _mfcc_description(i) for i in range(1, 23)}
+
 st.set_page_config(page_title="Frog Species Classifier", page_icon="🐸", layout="wide")
 
 
@@ -65,6 +80,14 @@ def main():
         st.write(f"**{len(expected_feature_columns())} MFCC features**, 10 frog species")
         st.write("Species distribution in the bundled held-out test set:")
         st.bar_chart(info_df[TARGET_COL].value_counts())
+
+    with st.sidebar.expander("Feature descriptions"):
+        st.dataframe(
+            pd.DataFrame(
+                {"Feature": FEATURE_DESCRIPTIONS.keys(), "Description": FEATURE_DESCRIPTIONS.values()}
+            ),
+            hide_index=True,
+        )
 
     uploaded = st.file_uploader("Upload test CSV", type="csv")
 
@@ -109,7 +132,8 @@ def main():
         st.error(f"The {TARGET_COL} column has missing values.")
         return
 
-    st.write(f"Loaded {df.shape[0]} rows, {df.shape[1]} columns.")
+    st.subheader("Preview of dataset")
+    st.caption(f"Loaded {df.shape[0]} rows, {df.shape[1]} columns.")
     st.dataframe(df.head())
 
     X = numeric_X
@@ -158,8 +182,16 @@ def main():
     st.pyplot(fig)
 
     st.subheader("Classification report")
-    report = classification_report(y_true, y_pred, labels=labels_sorted, zero_division=0)
-    st.text(report)
+    report_dict = classification_report(
+        y_true, y_pred, labels=labels_sorted, zero_division=0, output_dict=True
+    )
+    report_dict.pop("accuracy", None)  # scalar, not a per-row dict — shown above already
+    report_df = pd.DataFrame(report_dict).T
+    report_df[["precision", "recall", "f1-score"]] = report_df[
+        ["precision", "recall", "f1-score"]
+    ].round(3)
+    report_df["support"] = report_df["support"].astype(int)
+    st.dataframe(report_df)
 
     st.divider()
     st.caption(
